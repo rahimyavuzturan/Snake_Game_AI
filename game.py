@@ -4,9 +4,7 @@ from enum import Enum
 from collections import namedtuple
 
 pygame.init()
-
 font = pygame.font.Font('arial.ttf',25)
-
 Point = namedtuple('Point', 'x, y')
 
 #RGB COLORS
@@ -17,7 +15,13 @@ SNAKE_OUTLINE = (161, 214, 178)
 SNAKE_INLINE = (181, 223, 178)
 
 BLOCK_SIZE = 20
-SPEED = 20
+SPEED = 10
+
+# reset
+# reward
+# play(action) -> direction
+# game_iteration
+# is_collision  
 
 class Direction(Enum):
     RIGHT = 1
