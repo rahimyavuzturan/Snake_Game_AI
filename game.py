@@ -17,7 +17,7 @@ SNAKE_INLINE = (181, 223, 178)
 BLOCK_SIZE = 20
 SPEED = 10
 
-# reset
+
 # reward
 # play(action) -> direction
 # game_iteration
@@ -40,6 +40,8 @@ class SnakeGame():
         pygame.display.set_caption('Snake')
         self.clock = pygame.time.Clock()
 
+        
+    def reset(self):
         #başlangıç durumları
         self.direction = Direction.RIGHT
         self.old_direction = Direction.RIGHT
@@ -52,6 +54,8 @@ class SnakeGame():
         self.score = 0
         self.food = None
         self._place_food()
+        self.reset()
+        self.frame_iteration = 0
 
     def _place_food(self):
         x=random.randint(0,(self.w-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
@@ -60,7 +64,7 @@ class SnakeGame():
         if self.food in self.snake:
             self._place_food()  
 
-    def _move(self,direction):
+    def _move(self,action):
         x = self.head.x
         y = self.head.y
         if direction == Direction.RIGHT:
@@ -74,47 +78,44 @@ class SnakeGame():
         
         self.head = Point(x,y)
     
-    def _is_collision(self):
+    def _is_collision(self, pt=None):
+        if pt is None:
+            pt = self.head
         #sınırlara çarpma
-        if self.head.x > self.w - BLOCK_SIZE or self.head.x < 0 or self.head.y > self.h - BLOCK_SIZE or self.head.y < 0:
+        if pt.x > self.w - BLOCK_SIZE or pt.x < 0 or pt.y > self.h - BLOCK_SIZE or pt.y < 0:
             return True
         
         #kendine çarpma
-        if self.head in self.snake[1:]:
+        if pt in self.snake[1:]:
             return True
         
         return False
 
 
-    def play_step(self):
-        # 1. user input al
+    def play_step(self, action):
+        self.frame_iteration += 1
+        # 1.agent
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and self.direction != Direction.RIGHT:
-                    self.direction = Direction.LEFT
-                elif event.key == pygame.K_RIGHT and self.direction != Direction.LEFT:
-                    self.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP and self.direction != Direction.DOWN:
-                    self.direction = Direction.UP
-                elif event.key == pygame.K_DOWN and self.direction != Direction.UP:
-                    self.direction = Direction.DOWN
 
         # 2. hareketi yap
-        self._move(self.direction)
+        self._move(action)
         self.snake.insert(0,self.head)
 
         # 3. oyunun bitip bitmediğini kontrol et
+        reward = 0
         game_over = False
-        if self._is_collision():
+        if self._is_collision() or self.frame_iteration > 100*len(self.snake):
             game_over = True
-            return game_over, self.score
+            reward -= 10
+            return reward, game_over, self.score
 
         # 4. hareket et (head ileri gittiği için kuyruk silincek) ya da _place_food (yemeği yemiş)
         if self.head == self.food:
             self.score += 1
+            reward += 10
             self._place_food()
         else:
             self.snake.pop()
@@ -126,7 +127,7 @@ class SnakeGame():
 
         # 6. oyun bitişini ve sonucu döndür
         game_over = False
-        return game_over, self.score
+        return reward, game_over, self.score
     
     def _update_ui(self):
         self.display.fill(BACKGROUND)
