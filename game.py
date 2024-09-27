@@ -30,7 +30,7 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
 
-class SnakeGame():
+class SnakeGameAI :
     # en ve boy
     def __init__(self, w = 640, h = 480):
         self.w = w
@@ -76,24 +76,25 @@ class SnakeGame():
         elif np.array_equal(action, [0,1,0]):
             next_idx = (idx+1) % 4  
             new_dir = clock_wise[next_idx]
-        else
+        else:
             next_idx = (idx-1) % 4  
             new_dir = clock_wise[next_idx]
+        self.direction = new_dir
 
         x = self.head.x
-        y = self.head.y
-        if direction == Direction.RIGHT:
+        y = self.head.y 
+        if self.direction == Direction.RIGHT:
             x += BLOCK_SIZE
-        elif direction == Direction.LEFT:
+        elif self.direction == Direction.LEFT:
             x -= BLOCK_SIZE
-        elif direction == Direction.UP:
+        elif self.direction == Direction.UP:
             y -= BLOCK_SIZE
-        elif direction == Direction.DOWN:
+        elif self.direction == Direction.DOWN:
             y += BLOCK_SIZE
         
         self.head = Point(x,y)
     
-    def _is_collision(self, pt=None):
+    def is_collision(self, pt=None):
         if pt is None:
             pt = self.head
         #sınırlara çarpma
@@ -122,7 +123,7 @@ class SnakeGame():
         # 3. oyunun bitip bitmediğini kontrol et
         reward = 0
         game_over = False
-        if self._is_collision() or self.frame_iteration > 100*len(self.snake):
+        if self.is_collision() or self.frame_iteration > 100*len(self.snake):
             game_over = True
             reward -= 10
             return reward, game_over, self.score
@@ -157,15 +158,16 @@ class SnakeGame():
         self.display.blit(text, [0,0])
         pygame.display.flip()
 
-if __name__ == '__main__':
-    game = SnakeGame()
-
-    # loop
-    while True:
-        game_over, score = game.play_step()
-
-        #oyun bitişi kontrolü
-        if game_over == True:
-            break   #döngüden çıkış
-
-    pygame.quit()
+# agent kontrol etceği için gerek yok
+#if __name__ == '__main__':
+#    game = SnakeGame()
+#
+#    # loop
+#    while True:
+#        game_over, score = game.play_step()
+#
+#        #oyun bitişi kontrolü
+#        if game_over == True:
+#            break   #döngüden çıkış
+#
+#    pygame.quit()
